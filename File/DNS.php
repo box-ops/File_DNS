@@ -653,6 +653,7 @@ class File_DNS
         $soa['retry']   = $this->parseFromSeconds($soa['retry']);
         $soa['expire']  = $this->parseFromSeconds($soa['expire']);
         $soa['minimum'] = $this->parseFromSeconds($soa['minimum']);
+
         foreach (array_values($soa) as $item) {
             //Scan all items to see if any are a pear error.
             if (PEAR::isError($item)) {
@@ -667,13 +668,13 @@ class File_DNS
         $zone[] = $tabs . $soa['minimum'] . ")\t\t; minimum";
         $zone[] = '';
 
-        foreach ($this->_generate as $generate)
+        foreach ($this->getGenerates() as $generate)
         {
-            $zone[] = $generate;
-            $zone[] = '';
+            $zone[] = '$GENERATE ' . $generate;
         }
+        $zone[] = '';
 
-        foreach ($this->_records as $record) {
+        foreach ($this->getRecords() as $record) {
             $record['ttl'] = $this->parseFromSeconds($record['ttl']);
             if (PEAR::isError($record['ttl'])){
                 return $record['ttl'];
@@ -772,9 +773,28 @@ class File_DNS
      */
     public function getRecords()
     {
-        return $this->_records;
+        if (!empty($this->_records) && is_array($this->_records))
+        {
+            return $this->_records;
+        }
+        return Array();
     }
     // }}}
+    // {{{ getGenerates()
+
+    /**
+    * Gets the Records array of the currently loaded zone.
+    * @return Array
+    */
+    public function getGenerates()
+    {
+        if (!empty($this->_generate) && is_array($this->_generate))
+        {
+        	return $this->_generate;
+        } else {
+            return Array();
+        }
+    }
     // }}}
     // {{{ Setters
     // {{{ setDomainName()
