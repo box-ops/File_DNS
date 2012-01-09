@@ -25,6 +25,12 @@
  * @link       http://pear.php.net/package/File_DNS
  */
 
+//TODO: (jcreasy) Pear has suggested that this module be converted to the PHP5 standards
+//TODO: (jcreasy) Update error handling to throw exceptions http://pear.php.net/manual/en/standards.errors.php
+//TODO: (jcreasy) Test code against the PEAR code sniffer, document and fix any issues http://pear.php.net/manual/en/package.php.php-codesniffer.php
+//TODO: (jcreasy) Update code to meet PEAR2 standards http://pear.php.net/manual/en/pear2cs.rules.php
+//TODO: (jcreasy) http://pear.php.net/manual/en/developers.recommendations.php
+
 // {{{ requires
 
 /**
@@ -341,7 +347,9 @@ class File_DNS
 				//New origin. Append to current origin.
 				$origin = trim($matches[1]) . '.' . $origin;
 			} elseif (preg_match('/^\$GENERATE (.*)/', $line, $matches)) {
-				//GENERATE STATEMENT
+				// GENERATE STATEMENT
+				// The $GENERATE directive is a BIND extension and not part of the standard zone file format.
+				// http://www.bind9.net/manual/bind/9.3.2/Bv9ARM.ch06.html#id2566761
 				$rr = $this->_parseCommand($line, $origin);
 				break;
 			} elseif (stristr($line, ' SOA ')) {
@@ -546,6 +554,7 @@ class File_DNS
 	* @param string  $origin  the current origin of this record.
 	* @return array  array of RR info to be saved on success,
 	*                PEAR error object on failure.
+	*
 	*/
 	function _parseCOMMAND($line, $origin)
 	{
