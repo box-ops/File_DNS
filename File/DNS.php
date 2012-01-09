@@ -348,8 +348,7 @@ class File_DNS
                 // GENERATE STATEMENT
                 // The $GENERATE directive is a BIND extension and not part of the standard zone file format.
                 // http://www.bind9.net/manual/bind/9.3.2/Bv9ARM.ch06.html#id2566761
-                $this->_genrate[] = $matches[1];
-                break;
+                $this->_generate[] = $matches[1];
             } elseif (stristr($line, ' SOA ')) {
                 if ($this->_SOA) {
                     //SOA already set. Only one per zone is possible.
@@ -596,21 +595,30 @@ class File_DNS
      *                            Defaults to FALSE (none)
      * @return  true   true on success, PEAR Error on failure.
      */
-    public function save($filename = null, $separator = "\n", $lock = false)
+    public function save($filename = null, $separator = "\n", $lock = false, $zone = null)
     {
-        if ($filename == null) {
+        if ($filename == NULL) {
             $filename = $this->_filename;
         }
-        $zone = $this->_generateZone();
+
+        if ($zone === NULL)
+        {
+            $zone = $this->_generateZone();
+        }
+
         $zone = implode($separator, $zone);
+
         $save = File::write($filename, $zone, FILE_MODE_WRITE, $lock);
+
         if (PEAR::isError($save)) {
             //File package doesn't have codes associated with errors,
             //so raise our own.
             return PEAR::raiseError("Unable to save file $filename",
             FILE_DNS_FILE_WRITE_FAILED,
             NULL, NULL, $filename);
+            return false;
         }
+
         return true;
     }
 
@@ -753,7 +761,7 @@ class File_DNS
      */
     public function getSOA()
     {
-        return $this->_SOA();
+        return $this->_SOA;
     }
     // }}}
     // {{{ getRecords()
@@ -764,7 +772,7 @@ class File_DNS
      */
     public function getRecords()
     {
-        return $this->_records();
+        return $this->_records;
     }
     // }}}
     // }}}
