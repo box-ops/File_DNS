@@ -757,37 +757,39 @@ class File_DNS
     *
     * @return array 	   Record array or false on failure
     */
-    public function addRecord($name = null, $ttl = null, $class = 'IN', $type = 'A', $data = '127.0.0.1')
-    {
+    public function addRecord(
+        $name = null, $ttl = null, $class = 'IN', $type = 'A', $data = '127.0.0.1'
+    ) {
         $record['name'] = $name;
         $record['ttl'] = $ttl;
         $record['class'] = $class;
         $record['type'] = $type;
         $record['data'] = $data;
 
-        if (empty($record['name']) || $record['name'] == '@')
-        {
+        if (empty($record['name']) || $record['name'] == '@') {
             $record['name'] = $this->_SOA['origin'];
         }
 
-        if (empty($record['ttl']))
-        {
+        if (empty($record['ttl'])) {
             $record['ttl'] = $this->_SOA['ttl'];
         }
 
-        if (empty($record['class']))
-        {
+        if (empty($record['class'])) {
             $record['class'] = 'IN';
         }
 
-        if (empty($record['type']))
-        {
-            throw new PEAR_Exception('Unable to add record. type cannot be empty.', FILE_DNS_PARSE_RR_FAILED);
+        if (empty($record['type'])) {
+            throw new PEAR_Exception(
+                'Unable to add record. type cannot be empty.',
+                FILE_DNS_PARSE_RR_FAILED
+            );
         }
 
-        if (empty($record['data']))
-        {
-            throw new PEAR_Exception('Unable to add record. data cannot be empty.', FILE_DNS_PARSE_RR_FAILED);
+        if (empty($record['data'])) {
+            throw new PEAR_Exception(
+                'Unable to add record. data cannot be empty.',
+                FILE_DNS_PARSE_RR_FAILED
+            );
         }
 
         $_records[] = $record;
@@ -799,12 +801,12 @@ class File_DNS
 
     /**
      * Gets the SOA section of the currently loaded zone.
+     *
      * @return Array
      */
     public function getSOA()
     {
-        if (!empty($this->_SOA) && is_array($this->_SOA))
-        {
+        if (!empty($this->_SOA) && is_array($this->_SOA)) {
             return $this->_SOA;
         }
         return Array();
@@ -814,12 +816,12 @@ class File_DNS
 
     /**
      * Gets the Records array of the currently loaded zone.
+     *
      * @return Array
      */
     public function getRecords()
     {
-        if (!empty($this->_records) && is_array($this->_records))
-        {
+        if (!empty($this->_records) && is_array($this->_records)) {
             return $this->_records;
         }
         return Array();
@@ -829,12 +831,12 @@ class File_DNS
 
     /**
      * Gets the Records array of the currently loaded zone.
+     *
      * @return Array
      */
     public function getGenerates()
     {
-        if (!empty($this->_generate) && is_array($this->_generate))
-        {
+        if (!empty($this->_generate) && is_array($this->_generate)) {
             return $this->_generate;
         } else {
             return Array();
@@ -848,11 +850,12 @@ class File_DNS
      * sets the domain name of the currently loaded zone.
      * It also handles changing all the RR's already saved.
      *
-     * @param string    $domain  the new domain name
-     * @param bool      $migrate whether or not to change all occurances
+     * @param string $domain  the new domain name
+     * @param bool   $migrate whether or not to change all occurances
      *                           of *.oldomain
      *                           to the new domain name.
      *                           Defaults to true.
+     *
      * @throws PEAR_Exception
      * @return bool  true on success, PEAR Error on failure.
      */
@@ -860,7 +863,10 @@ class File_DNS
     {
         $valid = '/^[A-Za-z0-9\-\_\.]*$/';
         if (!preg_match($valid, $domain)) {
-            throw new PEAR_Exception('Unable to set domainname. ' . $domain, FILE_DNS_INVALID_DOMAIN);
+            throw new PEAR_Exception(
+                'Unable to set domainname. ' . $domain,
+                FILE_DNS_INVALID_DOMAIN
+            );
         }
         $oldDomain = $this->_domain;
         $domain = rtrim($domain, '.');
@@ -870,19 +876,26 @@ class File_DNS
             if ($migrate) {
                 $search = '/^(.*)(' . preg_quote($oldDomain) . ')(\.)$/';
                 $replace = '$1' . $domain . '$3';
-                $this->_SOA['name']   = preg_replace($search, $replace,
-                $this->_SOA['name']  );
-                $this->_SOA['origin'] = preg_replace($search, $replace,
-                $this->_SOA['origin']);
-                $this->_SOA['person'] = preg_replace($search, $replace,
-                $this->_SOA['person']);
+
+                $this->_SOA['name'] = preg_replace(
+                    $search, $replace, $this->_SOA['name']
+                );
+
+                $this->_SOA['origin'] = preg_replace(
+                    $search, $replace, $this->_SOA['origin']
+                );
+
+                $this->_SOA['person'] = preg_replace(
+                    $search, $replace, $this->_SOA['person']
+                );
+
                 foreach ($this->_records as $key => $record) {
-                    $this->_records[$key]['name'] =
-                    preg_replace($search, $replace,
-                    $this->_records[$key]['name']);
-                    $this->_records[$key]['data'] =
-                    preg_replace($search, $replace,
-                    $this->_records[$key]['data']);
+                    $this->_records[$key]['name'] = preg_replace(
+                        $search, $replace, $this->_records[$key]['name']
+                    );
+                    $this->_records[$key]['data'] = preg_replace(
+                        $search, $replace, $this->_records[$key]['data']
+                    );
                 }
             }
         }
@@ -913,7 +926,8 @@ class File_DNS
      *   )
      * </pre>
      *
-     * @param array  $values A list of key -> value pairs
+     * @param array $values A list of key -> value pairs
+     *
      * @return bool  true on success, PEAR Error on failure.
      * @see _SOA
      */
@@ -921,43 +935,54 @@ class File_DNS
     {
         $soa = array();
         if (!is_array($values)) {
-            throw new PEAR_Exception('Unable to set SOA value. ', FILE_DNS_UPDATE_SOA_FAILED);
+            throw new PEAR_Exception(
+                'Unable to set SOA value. ', FILE_DNS_UPDATE_SOA_FAILED
+            );
         }
         $validKeys = array('name', 'ttl', 'class', 'origin', 'person',
                            'serial', 'refresh', 'retry', 'expire', 'minimum');
         foreach ($values as $key => $value) {
             if (array_search($key, $validKeys) === false) {
-                throw new PEAR_Exception('Unable to set SOA value. ' . $key . ' not recognized ', FILE_DNS_UPDATE_SOA_FAILED);
+                throw new PEAR_Exception(
+                    'Unable to set SOA value. ' . $key . ' not recognized ',
+                    FILE_DNS_UPDATE_SOA_FAILED
+                );
             }
 
             switch (strtolower($key)) {
-                case 'person':
-                    $value = str_replace('@', '.', $value);
-                    $value = trim($value, '.') . '.';
-                case 'name':
-                case 'origin':
-                    $valid = '/^[A-Za-z0-9\-\_\.]*\.$/';
-                    if (preg_match($valid, $value)) {
-                        $soa[$key] = $value;
-                    } else {
-                        throw new PEAR_Exception('Unable to set SOA value. ' . $key . ' not valid ', FILE_DNS_UPDATE_SOA_FAILED);
-                    }
-                    break;
-                case 'class':
+            case 'person':
+                $value = str_replace('@', '.', $value);
+                $value = trim($value, '.') . '.';
+            case 'name':
+            case 'origin':
+                $valid = '/^[A-Za-z0-9\-\_\.]*\.$/';
+                if (preg_match($valid, $value)) {
                     $soa[$key] = $value;
-                    break;
-                case 'ttl':
-                case 'serial':
-                case 'refresh':
-                case 'retry':
-                case 'expire':
-                case 'minimum':
-                    if (is_numeric($value)) {
-                        $soa[$key] = $value;
-                    } else {
-                        throw new PEAR_Exception('Unable to set SOA value. ' . $key . ' not recognized', FILE_DNS_UPDATE_SOA_FAILED);
-                    }
-                    break;
+                } else {
+                    throw new PEAR_Exception(
+                        'Unable to set SOA value. ' . $key . ' not valid ',
+                        FILE_DNS_UPDATE_SOA_FAILED
+                    );
+                }
+                break;
+            case 'class':
+                $soa[$key] = $value;
+                break;
+            case 'ttl':
+            case 'serial':
+            case 'refresh':
+            case 'retry':
+            case 'expire':
+            case 'minimum':
+                if (is_numeric($value)) {
+                    $soa[$key] = $value;
+                } else {
+                    throw new PEAR_Exception(
+                        'Unable to set SOA value. ' . $key . ' not recognized',
+                        FILE_DNS_UPDATE_SOA_FAILED
+                    );
+                }
+                break;
             }
 
 
@@ -973,36 +998,24 @@ class File_DNS
     /**
      * sets the TTL of a specific, or not so specific, record.
      *
-     * @param int     $new  The new TTL for this record
-     * @param string  $name The name of the record to edit. (null for all)
-     * @param string  $type The type of the record to edit. (null for all)
-     * @param string  $data The data of the record to edit. (null for all)
+     * @param int    $new  The new TTL for this record
+     * @param string $name The name of the record to edit. (null for all)
+     * @param string $type The type of the record to edit. (null for all)
+     * @param string $data The data of the record to edit. (null for all)
+     *
      * @return bool   true.
      */
     public function setTTL($new, $name = null, $type = null, $data = null)
     {
         $new = abs(intval($new));
         foreach ($this->_records as $key => $record) {
-            if (
-            (
-            (null == $name)
-            ||
-            (0 == strcasecmp($name, $record['name']) )
-            ||
-            (0 == strcasecmp("$name.{$this->_domain}.", $record['name']) )
-            )
-            &&
-            (
-            (null == $type)
-            ||
-            (0 == strcasecmp($type, $record['type']) )
-            )
-            &&
-            (
-            (null == $data)
-            ||
-            (0 == strcasecmp($data, $record['data']) )
-            )
+            if ((empty($name)
+                || (0 === strcasecmp($name, $record['name']))
+                || (0 == strcasecmp($name. $this->_domain . '.', $record['name'])))
+                && ((empty($type))
+                || (0 == strcasecmp($type, $record['type'])))
+                && ((empty($data))
+                || (0 == strcasecmp($data, $record['data'])))
             ) {
                 $this->_records[$key]['ttl'] = $new;
             }
@@ -1016,11 +1029,12 @@ class File_DNS
     /**
      * sets the name of a specific, or not so specific, record.
      *
-     * @param string  $new  The new name for this record. If needed, the
+     * @param string $new  The new name for this record. If needed, the
      *                      current domainname will be automaticly appended.
-     * @param string  $name The name of the record to edit. (null for all)
-     * @param string  $type The type of the record to edit. (null for all)
-     * @param string  $data The data of the record to edit. (null for all)
+     * @param string $name The name of the record to edit. (null for all)
+     * @param string $type The type of the record to edit. (null for all)
+     * @param string $data The data of the record to edit. (null for all)
+     *
      * @return bool   true.
      */
     public function setName($new, $name = null, $type = null, $data = null)
@@ -1037,27 +1051,7 @@ class File_DNS
             $new .= '.' . $this->_domain . '.';
         }
         foreach ($this->_records as $key => $record) {
-            if (
-            (
-            (null == $name)
-            ||
-            (0 == strcasecmp($name, $record['name']))
-            ||
-            (0 == strcasecmp("$name.{$this->_domain}.", $record['name']))
-            )
-            &&
-            (
-            (null == $type)
-            ||
-            (0 == strcasecmp($type, $record['type']))
-            )
-            &&
-            (
-            (null == $data)
-            ||
-            (0 == strcasecmp($data, $record['data']))
-            )
-            ) {
+            if ($this->compareValues($name, $type, $data, $record)) {
                 $this->_records[$key]['name'] = $new;
             }
         }
@@ -1070,10 +1064,11 @@ class File_DNS
     /**
      * sets the Value of a specific, or not so specific, record.
      *
-     * @param string  $new    The new Value for this record
-     * @param string  $name   The name of the record to edit. (null for all)
-     * @param string  $type   The type of the record to edit. (null for all)
-     * @param string  $data   The data of the record to edit. (null for all)
+     * @param string $new  The new Value for this record
+     * @param string $name The name of the record to edit. (null for all)
+     * @param string $type The type of the record to edit. (null for all)
+     * @param string $data The data of the record to edit. (null for all)
+     *
      * @return bool   true on success, PEAR_ERROR on error.
      *
      */
@@ -1081,27 +1076,7 @@ class File_DNS
     {
         $new = strval($new);
         foreach ($this->_records as $key => $record) {
-            if (
-            (
-            (null == $name)
-            ||
-            (0 == strcasecmp($name, $record['name']) )
-            ||
-            (0 == strcasecmp("$name.{$this->_domain}.", $record['name']))
-            )
-            &&
-            (
-            (null == $type)
-            ||
-            (0 == strcasecmp($type, $record['type']))
-            )
-            &&
-            (
-            (null == $data )
-            ||
-            (0 == strcasecmp($data, $record['data']) )
-            )
-            ) {
+            if ($this->_compareValues($name, $type, $data, $record)) {
                 $this->_records[$key]['data'] = $new;
             }
         }
@@ -1118,6 +1093,7 @@ class File_DNS
      * @param int    $pref   the preference level.
      * @param string $server the mailserver this MX points to.   (null for all)
      * @param string $name   the (sub)domain this MX applies to. (null for all)
+     *
      * @return bool  true on success, PEAR Error on failure.
      */
     public function setMXPref($pref, $server = null, $name = null )
@@ -1153,12 +1129,9 @@ class File_DNS
             $server .= '.' . $this->_domain . '.';
         }
         foreach ($this->_records as $key => $record) {
-            if (
-            ($record['type'] == 'MX')
-            &&
-            ( ($server == null) || ($server == $record['data']) )
-            &&
-            ( ($name   == null) || ($name   == $record['name']) )
+            if (($record['type'] == 'MX')
+                && (empty($server) || ($server == $record['data']))
+                && ((empty($name)) || ($name   == $record['name']) )
             ) {
                 if (!isset($this->_records[$key]['options'])) {
                     $this->_records[$key]['options'] = array();
@@ -1172,6 +1145,41 @@ class File_DNS
     // }}}
     // }}}
     // {{{ Static functions
+    // {{{ Compare Values
+    /**
+     * Checks to see if values are empty or match the existing value
+     *
+     * @param string $name   Name value to check
+     * @param string $type   Type value to check
+     * @param string $data   Data value to check
+     * @param array  $record The record to compare against
+     *
+     * @return bool returns true if they do not match and are not empty
+     */
+    private function _compareValues($name, $type, $data, $record)
+    {
+        if (!empty($name)
+            && ((strcasecmp($name, $record['name']) !== 0) 
+            ||  (strcasecmp($name . $this->_domain, $record['name']) !== 0))
+        ) {
+            return true;
+        }
+
+        if (!empty($type)
+            && (strcasecmp($type, $record['type']) !== 0)
+        ) { 
+            return true;
+        }
+
+        if (!empty($data)
+            || (strcasecmp($data, $record['data']) !== 0)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+    // }}}
     // {{{ raiseSerial()
 
     /**
@@ -1182,7 +1190,8 @@ class File_DNS
      * allowing up to 100 edits per day. After that the serial wraps
      * into the next day and it still works.
      *
-     * @param int  $serial Current serial
+     * @param int $serial Current serial
+     *
      * @static
      * @return int New serial
      */
@@ -1208,6 +1217,7 @@ class File_DNS
      * converts a BIND-style timeout(1D, 2H, 15M) to seconds.
      *
      * @param string $time Time to convert.
+     *
      * @static
      * @return int    time in seconds on success, PEAR error on failure.
      */
@@ -1246,8 +1256,11 @@ class File_DNS
                 $times = 1 * 60 * 60 * 24 * 7; //Week
                 break;
             default:
-                throw new PEAR_Exception("Unable to parse time. $time", FILE_DNS_PARSE_TIME_FAILED);
-            break;
+                throw new PEAR_Exception(
+                    "Unable to parse time. $time", 
+                    FILE_DNS_PARSE_TIME_FAILED
+                );
+                break;
             }
             $time = $num * $times;
             return $time;
@@ -1260,7 +1273,8 @@ class File_DNS
     /**
      * converts seconds to BIND-style timeout(1D, 2H, 15M).
      *
-     * @param  int    seconds to convert
+     * @param int $ttl seconds to convert
+     *
      * @static
      * @return string String with time on success, PEAR error on failure.
      *
@@ -1269,7 +1283,10 @@ class File_DNS
     {
         $ttl = intval($ttl);
         if (!is_int($ttl)) {
-            throw new PEAR_Exception("Unable to parse time back. $ttl", FILE_DNS_PARSEBACK_TIME_FAILED);
+            throw new PEAR_Exception(
+                "Unable to parse time back. $ttl",
+                FILE_DNS_PARSEBACK_TIME_FAILED
+            );
         } elseif (is_int($num = ($ttl / ( 1 * 60 * 60 * 24 * 7)))) {
             return "$num" . 'W';
         } elseif (is_int($num = ($ttl / ( 1 * 60 * 60 * 24)))) {
@@ -1291,6 +1308,7 @@ class File_DNS
      * checks if a value is an IP address or not.
      *
      * @param string $value Value to check.
+     *
      * @static
      * @return bool  true or false.
      *
