@@ -772,7 +772,11 @@ class File_DNS
      */
     public function getSOA()
     {
-        return $this->_SOA;
+        if (!empty($this->_SOA) && is_array($this->_SOA))
+        {
+        	return $this->_SOA;
+        }
+        return Array();
     }
     // }}}
     // {{{ getRecords()
