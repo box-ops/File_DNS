@@ -204,11 +204,12 @@ class File_DNS
      * CNAME
      * PTR
      * TXT
+     * SRV
      *
      * @var array
      * @see _parseRR
      */
-    private $_types = array('SOA', 'A', 'AAAA', 'NS', 'MX', 'CNAME', 'PTR', 'TXT');
+    private $_types = array('SOA', 'A', 'AAAA', 'NS', 'MX', 'CNAME', 'PTR', 'TXT', 'SRV');
 
     /**
      * zonefile modification check
@@ -496,32 +497,29 @@ class File_DNS
             } elseif (!is_null($record['type'])) {
                 //We found out what type we are. This must be the data field.
                 switch (strtoupper($record['type'])) {
-                    case 'A':
-                    case 'AAAA':
-                    case 'NS':
-                    case 'CNAME':
-                    case 'PTR':
-                        $record['data'] = $item;
-                        break 2;
-
-                    case 'MX':
-                        //MX have an extra element. Save both right away.
-                        //The setting itself is in the next item.
-                        $record['data'] = $items[$key+1];
-                        $record['options'] = array('MXPreference' => $item);
-                        break 2;
-
-                    case 'TXT':
-                        $record['data'] .= ' ' . $item;
-                        break;
-
-                    default:
-                        return PEAR::raiseError('Unable to parse RR. ' .
-                    $record['type'] .
-                                            ' not recognized.',
-                    FILE_DNS_PARSE_RR_FAILED,
-                    NULL, NULL, $record['type']);
+                case 'A':
+                case 'AAAA':
+                case 'NS':
+                case 'SRV':
+                case 'CNAME':
+                case 'PTR':
+                    $record['data'] = $item;
                     break 2;
+                case 'MX':
+                    //MX have an extra element. Save both right away.
+                    //The setting itself is in the next item.
+                    $record['data'] = $items[$key+1];
+                    $record['options'] = array('MXPreference' => $item);
+                    break 2;
+                case 'TXT':
+                    $record['data'] .= ' ' . $item;
+                    break;
+                default:
+                    return PEAR::raiseError('Unable to parse RR. ' . $record['type'] . ' not recognized.',
+	                FILE_DNS_PARSE_RR_FAILED,
+	                NULL,
+	                NULL,
+	                $record['type']);
                 }
                 //We're done parsing this RR now. Break out of the loop.
             } else {
@@ -597,11 +595,11 @@ class File_DNS
      */
     public function save($filename = null, $separator = "\n", $lock = false, $zone = null)
     {
-        if ($filename == NULL) {
+        if (empty($filename)) {
             $filename = $this->_filename;
         }
 
-        if ($zone === NULL)
+        if (empty($zone))
         {
             $zone = $this->_generateZone();
         }
@@ -616,7 +614,6 @@ class File_DNS
             return PEAR::raiseError("Unable to save file $filename",
             FILE_DNS_FILE_WRITE_FAILED,
             NULL, NULL, $filename);
-            return false;
         }
 
         return true;
@@ -712,8 +709,18 @@ class File_DNS
     // }}}
     // }}}
     // {{{ Modifiers
-
-    public function addRecord($name = null, $ttl = null, $class = null, $type = null, $data = null)
+    /**
+     * Adds a record to the currently loaded zone.
+     *
+     * This function returns the new record in array form.
+     *
+     * @param string $name   the SOA line to be parsed.
+     *                       Should be stripped of comments and on 1 line.
+     * @param int    $ttl    the TTL of this record
+     * @param string $class The Class of the record, normally 'IN'
+     * @return array 		Record array or false on failure
+     */
+    public function addRecord($name = null, $ttl = null, $class = 'IN', $type = 'A', $data = '127.0.0.1')
     {
         $record['name'] = $name;
         $record['ttl'] = $ttl;
@@ -751,6 +758,9 @@ class File_DNS
             NULL, NULL, $record['data']);
             return false;
         }
+
+        $_records[] = $record;
+        return $record;
     }
     // }}}
     // {{{ Getters
@@ -783,14 +793,14 @@ class File_DNS
     // {{{ getGenerates()
 
     /**
-    * Gets the Records array of the currently loaded zone.
-    * @return Array
-    */
+     * Gets the Records array of the currently loaded zone.
+     * @return Array
+     */
     public function getGenerates()
     {
         if (!empty($this->_generate) && is_array($this->_generate))
         {
-        	return $this->_generate;
+            return $this->_generate;
         } else {
             return Array();
         }
@@ -1216,7 +1226,7 @@ class File_DNS
                 break;
             }
             $time = $num * $times;
-            return $seconds;
+            return $time;
         }
     }
 
